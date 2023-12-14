@@ -1,0 +1,152 @@
+﻿@using MusicZoneSystem.Models
+@{
+    ViewBag.Title = "Requisition";
+    Layout = "~/Views/_LayoutPage1.cshtml";
+}
+
+@model List<supplierDetails>
+<!-- inner banner -->
+<section class="inner-banner py-5">
+    <div class="w3l-breadcrumb py-lg-5">
+        <div class="container pt-4 pb-sm-4">
+            <h4 class="inner-text-title pt-5">Requisition</h4>
+            <ul class="breadcrumbs-custom-path">
+                <li><a href="/Home/Index">Home</a></li>
+                <li class="active"><i class="fas fa-angle-right"></i>Requisition</li>
+            </ul>
+        </div>
+    </div>
+</section>
+<!-- //inner banner -->
+<!-- Content block -->
+<section class="w3l-servicesblock py-5 mb-lg-5" id="requisition">
+    <div class="title-main text-center mx-auto mb-md-5 mb-4" style="max-width:500px;">
+        <p class="text-uppercase">Create a requisition</p>
+        <h3 class="title-style">Add a new requisition</h3>
+    </div>
+    <div class="row requisition-block">
+        <div class="col-md-7 mx-auto requisition-right" style="width: 80%">
+            <table class="table-striped table-bordered" id="item-list">
+                <colgroup>
+                    <col width="5%">
+                    <col width="15%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="20%">
+                    <col width="25%">
+                    <col width="15%">
+                    <col width="15%">
+                </colgroup>
+                <thead>
+                    <tr class="bg-navy disabled">
+                        <th class="px-1 py-1 text-center"></th>
+                        <th class="px-1 py-1 text-center">Supplier</th>
+                        <th class="px-1 py-1 text-center">Qty</th>
+                        <th class="px-1 py-1 text-center">Unit</th>
+                        <th class="px-1 py-1 text-center">Item</th>
+                        <th class="px-1 py-1 text-center">Description</th>
+                        <th class="px-1 py-1 text-center">Price</th>
+                        <th class="px-1 py-1 text-center">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="text-align: center">
+                        <td>
+                            <button class="btn btn-sm btn-danger py-0 delete-row" type="button"><i class="fa fa-times"></i></button>
+                        </td>
+                        <td>
+                            <select name="status" id="status" class="form-control form-control-sm rounded-0">
+                                @foreach (var supplier in Model)
+                                {
+                                    <option>@supplier.sup_company</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="qty" id="qty" class="requisition-input" required="" />
+                        </td>
+                        <td>
+                            <input type="text" name="unit" id="unit" class="requisition-input" required="" />
+                        </td>
+                        <td>
+                            <label>
+                                Item
+                            </label>
+                        </td>
+                        <td>
+                            <label>
+                                Description
+                            </label>
+                        </td>
+                        <td>
+                            <label>
+
+                            </label>
+                        </td>
+                        <td>
+                            <label>
+
+                            </label>
+                        </td>
+                    </tr>
+                    <tr style="text-align: center">
+                        <td>
+                            <button id="add" onclick="addRow()" type="button"><i class="fa fa-plus-square"></i></button>
+                        </td>
+                        <td style="border-color: transparent"></td>
+                        <td style="border-color: transparent"></td>
+                        <td style="border-color: transparent"></td>
+                        <td style="border-color: transparent"></td>
+                        <td style="border-color: transparent"></td>
+                        <td style="border-color: transparent"></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+<!-- Content block -->
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    // Function to add a new row
+    function addRow() {
+        var table = document.getElementById("item-list").getElementsByTagName('tbody')[0];
+        var templateRow = table.rows[0].cloneNode(true);
+
+        // Reset the values in the new row (optional)
+        var inputs = templateRow.getElementsByTagName('input');
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].value = '';
+        }
+
+        // Reset the selected option in the new row (optional)
+        var selects = templateRow.getElementsByTagName('select');
+        for (var i = 0; i < selects.length; i++) {
+            selects[i].selectedIndex = 0;
+        }
+
+        // Add the new row to the table
+        table.insertBefore(templateRow, table.lastElementChild);
+    }
+
+    // Function to delete the row
+    function deleteRow(button) {
+        var row = button.closest("tr");
+
+        // Check if the row being deleted is not the first row
+        if (row.rowIndex > 1) {
+            var table = document.getElementById("item-list").getElementsByTagName('tbody')[0];
+            table.removeChild(row);
+        }
+    }
+
+    // Event delegation for delete button click
+    $(document).on("click", ".delete-row", function () {
+        deleteRow(this);
+    });
+</script>
+
+
