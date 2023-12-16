@@ -1,10 +1,8 @@
-﻿@using MusicZoneSystem.Models
+﻿@model MusicZoneSystem.Models.requisitionModel
 @{
     ViewBag.Title = "Requisition";
     Layout = "~/Views/_LayoutPage1.cshtml";
 }
-
-@model List<supplierDetails>
 <!-- inner banner -->
 <section class="inner-banner py-5">
     <div class="w3l-breadcrumb py-lg-5">
@@ -18,135 +16,187 @@
     </div>
 </section>
 <!-- //inner banner -->
-<!-- Content block -->
+<!--Requisition Block-->
 <section class="w3l-servicesblock py-5 mb-lg-5" id="requisition">
     <div class="title-main text-center mx-auto mb-md-5 mb-4" style="max-width:500px;">
         <p class="text-uppercase">Create a requisition</p>
         <h3 class="title-style">Add a new requisition</h3>
     </div>
+
+    <!--Add Requisition Items-->
+    <div class="row requisition-block">
+        <div class="col-md-7 mx-auto requisition-right">
+            <form id="requisitionForm" method="post" action="@Url.Action("AddRequisition", "Home")">
+                <div class="input-grids">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <select name="ReqItem_Prod" id="ReqItem_Prod" class="requisition-select" required="">
+                                <option value="" disabled selected>--- Select Product ---</option>
+                                @foreach (var product in Model.requisitionItemList)
+                                {
+                                    <option value="@product.ReqItem_ID" data-desc="@product.ReqItem_Desc" data-price="@product.ReqItem_Price">@product.ReqItem_Item</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="number" min="1" name="ReqItem_Qt" id="ReqItem_Qt" placeholder="Quantity" class="requisition-input" required="" />
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="text" name="ReqItem_Unit" id="ReqItem_Unit" placeholder="Unit" class="requisition-input" required="" />
+                        </div>
+                    </div>
+                    <input type="text" name="desc" id="desc" placeholder="Description" class="requisition-input" disabled />
+                    <div class="row">
+                        <div class="col-sm-6" style="width: 50%">
+                            <input type="text" name="price" id="price" placeholder="Price" class="requisition-input" disabled />
+                        </div>
+                        <div class="col-sm-6" style="width: 50%">
+                            <input type="text" name="total" id="total" placeholder="Total" class="requisition-input" disabled />
+                            <input type="hidden" name="ReqItem_Total" id="ReqItem_Total" />
+                        </div>
+                    </div>
+                </div>
+                <div class="text-start">
+                    <button type="submit" class="btn btn-style btn-style-3">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--Add Requisition Items-->
+
+    <div><br /><br /></div>
+
+    <!--View Requisition Items-->
     <div class="row requisition-block">
         <div class="col-md-7 mx-auto requisition-right" style="width: 80%">
             <table class="table-striped table-bordered" id="item-list">
                 <colgroup>
+                    <col width="3%">
+                    <col width="10%">
+                    <col width="31%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="12%">
+                    <col width="12%">
                     <col width="5%">
-                    <col width="15%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="20%">
-                    <col width="25%">
-                    <col width="15%">
-                    <col width="15%">
+                    <col width="5%">
                 </colgroup>
                 <thead>
-                    <tr class="bg-navy disabled">
-                        <th class="px-1 py-1 text-center"></th>
-                        <th class="px-1 py-1 text-center">Supplier</th>
-                        <th class="px-1 py-1 text-center">Qty</th>
-                        <th class="px-1 py-1 text-center">Unit</th>
+                    <tr style="background-color: #fbb034; color: #000000;">
+                        <th class="px-1 py-1 text-center">#</th>
                         <th class="px-1 py-1 text-center">Item</th>
                         <th class="px-1 py-1 text-center">Description</th>
+                        <th class="px-1 py-1 text-center">Quantity</th>
+                        <th class="px-1 py-1 text-center">Unit</th>
                         <th class="px-1 py-1 text-center">Price</th>
                         <th class="px-1 py-1 text-center">Total</th>
+                        <th class="px-1 py-1 text-center"></th>
+                        <th class="px-1 py-1 text-center"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="text-align: center">
-                        <td>
-                            <button class="btn btn-sm btn-danger py-0 delete-row" type="button"><i class="fa fa-times"></i></button>
-                        </td>
-                        <td>
-                            <select name="status" id="status" class="form-control form-control-sm rounded-0">
-                                @foreach (var supplier in Model)
-                                {
-                                    <option>@supplier.sup_company</option>
-                                }
-                            </select>
-                        </td>
-                        <td>
-                            <input type="number" name="qty" id="qty" class="requisition-input" required="" />
-                        </td>
-                        <td>
-                            <input type="text" name="unit" id="unit" class="requisition-input" required="" />
-                        </td>
-                        <td>
-                            <label>
-                                Item
-                            </label>
-                        </td>
-                        <td>
-                            <label>
-                                Description
-                            </label>
-                        </td>
-                        <td>
-                            <label>
-
-                            </label>
-                        </td>
-                        <td>
-                            <label>
-
-                            </label>
-                        </td>
-                    </tr>
-                    <tr style="text-align: center">
-                        <td>
-                            <button id="add" onclick="addRow()" type="button"><i class="fa fa-plus-square"></i></button>
-                        </td>
-                        <td style="border-color: transparent"></td>
-                        <td style="border-color: transparent"></td>
-                        <td style="border-color: transparent"></td>
-                        <td style="border-color: transparent"></td>
-                        <td style="border-color: transparent"></td>
-                        <td style="border-color: transparent"></td>
-                        <td></td>
+                    @foreach (var canvas in Model.canvas)
+                    {
+                        <tr style="text-align: center">
+                            <td><p class="row-number"></p></td>
+                            <td>@canvas.CanvasItem</td>
+                            <td>@canvas.CanvasDesc</td>
+                            <td><input type="number" name="qty" id="qty" class="requisition-tb" style="margin-block:auto; border-radius: 0" value="@canvas.CanvasQuantity" /></td>
+                            <td><input type="text" name="unit" id="unit" class="requisition-tb" style="margin-block:auto; border-radius: 0" value="@canvas.CanvasUnit" /></td>
+                            <td>@canvas.CanvasPrice</td>
+                            <td class="canvas-total-value">@canvas.CanvasTotal</td>
+                            <td>
+                                <button class="btn btn-style-3" id="edit" type="button"><i class="fa fa-edit"></i></button>
+                            </td>
+                            <td><button class="btn btn-style-3" id="delete" type="button"><i class="fa fa-trash"></i></button></td>
+                        </tr>
+                    }
+                    <tr style="text-align: center; font-weight:600">
+                        <td colspan="6" style="text-align: right">Total estimated cost: &emsp;</td>
+                        <td style="border-right-color: transparent"><p class="total-cost"></p></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
+    <!--View Requisition Items-->
+
 </section>
-<!-- Content block -->
+<!--Requisition Block-->
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-    // Function to add a new row
-    function addRow() {
-        var table = document.getElementById("item-list").getElementsByTagName('tbody')[0];
-        var templateRow = table.rows[0].cloneNode(true);
+    // Add row numbers to each row in the table
+    document.addEventListener('DOMContentLoaded', function () {
+        var table = document.getElementById('item-list');
+        var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
-        // Reset the values in the new row (optional)
-        var inputs = templateRow.getElementsByTagName('input');
-        for (var i = 0; i < inputs.length; i++) {
-            inputs[i].value = '';
+        for (var i = 0; i < rows.length - 1; i++) {
+            var cell = rows[i].getElementsByTagName('td')[0];
+            cell.innerHTML = i + 1;
+        }
+    });
+
+    //Sum the totalCost
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get all elements with class 'canvas-total-value'
+        var canvasTotalElements = document.getElementsByClassName('canvas-total-value');
+
+        // Initialize total cost
+        var totalCost = 0;
+
+        // Iterate through each canvas total and update total cost
+        for (var i = 0; i < canvasTotalElements.length; i++) {
+            totalCost += parseFloat(canvasTotalElements[i].textContent);
         }
 
-        // Reset the selected option in the new row (optional)
-        var selects = templateRow.getElementsByTagName('select');
-        for (var i = 0; i < selects.length; i++) {
-            selects[i].selectedIndex = 0;
+        // Display total cost in the 'Total estimated cost' cell
+        document.querySelector('.total-cost').textContent = totalCost.toFixed(2);
+    });
+
+
+    $(document).ready(function () {
+        // Handle change event of the dropdown
+        $("#ReqItem_Prod").change(function () {
+            // Get the selected option
+            var selectedOption = $(this).find(":selected");
+
+            // Update description and price fields
+            $("#desc").val(selectedOption.data("desc"));
+            $("#price").val(selectedOption.data("price"));
+
+            // Recalculate and update total
+            calculateTotal();
+        });
+
+        // Handle input changes for quantity and price
+        $("#ReqItem_Qt, #price").on("input", function () {
+            // Recalculate and update total
+            calculateTotal();
+        });
+
+        function calculateTotal() {
+            // Get quantity and price values
+            var quantity = parseFloat($("#ReqItem_Qt").val()) || 0;
+            var price = parseFloat($("#price").val()) || 0;
+
+            // Calculate total
+            var total = quantity * price;
+
+            // Display total with label inside the input
+            $("#total").val(total.toFixed(2));
+
+            // Set the total value to the hidden input field
+            $("#ReqItem_Total").val(total.toFixed(2));
         }
 
-        // Add the new row to the table
-        table.insertBefore(templateRow, table.lastElementChild);
-    }
 
-    // Function to delete the row
-    function deleteRow(button) {
-        var row = button.closest("tr");
-
-        // Check if the row being deleted is not the first row
-        if (row.rowIndex > 1) {
-            var table = document.getElementById("item-list").getElementsByTagName('tbody')[0];
-            table.removeChild(row);
-        }
-    }
-
-    // Event delegation for delete button click
-    $(document).on("click", ".delete-row", function () {
-        deleteRow(this);
+        // Trigger change event on page load (if pre-selected option exists)
+        $("#ReqItem_Prod").change();
     });
 </script>
+
 
 

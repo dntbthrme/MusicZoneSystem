@@ -1008,7 +1008,7 @@ progress {
 
   .col-sm-6 {
     flex: 0 0 auto;
-    width: 50%;
+    width: 33.3%;
   }
 
   .col-sm-7 {
@@ -20886,7 +20886,7 @@ p.copy-footer-29 a:hover {
 
 /* inner banner */
 .inner-banner {
-  background: url(../images/banner3.jpg) no-repeat center;
+  background: url(../images/banner.jpg) no-repeat center;
   background-size: cover;
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -20976,52 +20976,65 @@ h4.inner-text-title {
 
 /* requisition section */
 .requisition-block input,
+.requisition-block select,
 .requisition-block textarea {
-  width: 100%;
-  color: var(--heading-color);
-  background: var(--bg-grey);
-  font-size: 16px;
-}
-
-.cont-left.text-center i {
-  color: var(--secondary-color);
-  font-size: 26px;
+    width: 100%;
+    color: var(--heading-color);
+    background: var(--bg-grey);
+    font-size: 16px;
+    padding: 14px;
+    border: 2px solid var(--border-color-light);
+    outline: none;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
 }
 
 .requisition-block textarea {
-  height: 50px;
-  margin: 0 0 0 0;
+    height: 180px;
+    margin: 0 0 20px 0;
 }
 
-.requisition-block input:focus,
-.requisition-block textarea:focus {
-  border: 2px solid var(--secondary-color);
-  background: var(--bg-color);
-}
+    .requisition-block input:focus,
+    .requisition-block select:focus,
+    .requisition-block textarea:focus {
+        border: 2px solid var(--secondary-color);
+        background: var(--bg-color);
+    }
 
 .requisition-left {
-  box-shadow: var(--box-shadow);
-  padding: 40px;
+    box-shadow: var(--box-shadow);
+    padding: 40px;
+}
+
+.requisition-select {
+    width: 100%;
+}
+
+.requisition-tb {
+    height: 30px;
+    padding: 0 0 0 0;
+    border-radius: 0;
 }
 
 .cont-details p a:hover {
-  color: var(--secondary-color);
+    color: var(--secondary-color);
 }
 
 .cont-details h6 {
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 18px;
-  margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 18px;
+    margin-bottom: 8px;
 }
 
 .map iframe {
-  -webkit-filter: var(--iframe-filter);
-  -moz-filter: var(--iframe-filter);
-  -ms-filter: var(--iframe-filter);
-  -o-filter: var(--iframe-filter);
-  filter: var(--iframe-filter);
+    -webkit-filter: var(--iframe-filter);
+    -moz-filter: var(--iframe-filter);
+    -ms-filter: var(--iframe-filter);
+    -o-filter: var(--iframe-filter);
+    filter: var(--iframe-filter);
 }
+
 
 /* //requisition section */
 
