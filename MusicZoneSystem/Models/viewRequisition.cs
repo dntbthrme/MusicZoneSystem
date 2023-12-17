@@ -14,5 +14,7 @@ namespace MusicZoneSystem.Models
         public string CanvasUnit { get; set; }
         public decimal CanvasPrice { get; set; }
         public decimal CanvasTotal { get; set; }
+        public string ItemDelete { get; set; }
+
     }
 }

@@ -286,40 +286,46 @@ namespace MusicZoneSystem.Controllers
             }
         }
 
-        //[HttpDelete]
-        //public ActionResult DeleteItem(int itemId)
-        //{
-        //    using (var db = new SqlConnection(mainconn))
-        //    {
-        //        db.Open();
-        //        using (var cmd = db.CreateCommand())
-        //        {
-        //            cmd.CommandType = CommandType.Text;
-        //            cmd.CommandText = "DELETE FROM [dbo].canvas where canvas_id = @canvasId";
-        //            cmd.Parameters.AddWithValue("@canvasId", itemId);
+        [HttpPost]
+        public ActionResult DeleteItem(string ItemDelete)
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "DELETE c FROM canvas c JOIN product p ON c.prod_id = p.prod_id WHERE p.prod_name = @canvas_Item";
+                    cmd.Parameters.AddWithValue("@canvas_Item", ItemDelete);
 
-        //            try
-        //            {
-        //                // Execute the DELETE statement.
-        //                int rowsAffected = cmd.ExecuteNonQuery();
+                    try
+                    {
+                        // Execute the DELETE statement.
+                        int rowsAffected = cmd.ExecuteNonQuery();
 
-        //                // Check if any rows were affected to determine if the deletion was successful.
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return RedirectToAction("Requisition");
-        //                }
-        //                else
-        //                {
-        //                    return View("Index");
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                return View("Index");
-        //            }
-        //        }
-        //    }
-        //}
+                        // Check if any rows were affected to determine if the deletion was successful.
+                        if (rowsAffected > 0)
+                        {
+                            // Redirect to the "Requisition" action
+                            return RedirectToAction("Requisition");
+                        }
+                        else
+                        {
+                            return View("Supplier");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.StackTrace);
+
+                        // Return an appropriate view or handle the error
+                        return View("Index");
+                    }
+                }
+            }
+        }
+
         public ActionResult Profile()
         {
             return View();
