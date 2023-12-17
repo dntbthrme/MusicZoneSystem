@@ -271,7 +271,8 @@ namespace MusicZoneSystem.Controllers
                     }
                     catch (Exception ex)
                     {
-                        // Log or handle the exception appropriately
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.StackTrace);
                         return View("Error"); // You might want to create an error view
                     }
                     finally
