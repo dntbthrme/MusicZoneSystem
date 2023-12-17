@@ -49,7 +49,7 @@ namespace MusicZoneSystem.Controllers
                                     ReqItem_ID = Convert.ToInt32(dr["prod_id"]),
                                     ReqItem_Item = dr["prod_name"].ToString(),
                                     ReqItem_Desc = dr["prod_desc"].ToString(),
-                                    ReqItem_Price = Convert.ToInt32(dr["prod_price"]),
+                                    ReqItem_Price = Convert.ToDecimal(dr["prod_price"]),
                                 };
                                 productList.Add(product);
                             }
@@ -60,7 +60,7 @@ namespace MusicZoneSystem.Controllers
                     using (var cmd = db.CreateCommand())
                     {
                         cmd.CommandType = CommandType.Text;
-                        cmd.CommandText = "SELECT p.prod_name, p.prod_desc, c.canvas_quantity, c.canvas_unit, p.prod_price, c.canvas_total FROM canvas c JOIN product p ON c.prod_id = p.prod_id";
+                        cmd.CommandText = "SELECT * FROM canvas c JOIN product p ON c.prod_id = p.prod_id where canvas_status = 0";
 
                         using (SqlDataReader canvasReader = cmd.ExecuteReader())
                         {
@@ -68,6 +68,7 @@ namespace MusicZoneSystem.Controllers
                             {
                                 viewRequisition canvas = new viewRequisition
                                 {
+                                    CanvasID = Convert.ToInt32(canvasReader["canvas_id"]),
                                     CanvasItem = canvasReader["prod_name"].ToString(),
                                     CanvasDesc = canvasReader["prod_desc"].ToString(),
                                     CanvasQuantity = Convert.ToInt32(canvasReader["canvas_quantity"]),
@@ -288,7 +289,7 @@ namespace MusicZoneSystem.Controllers
         }
 
         [HttpPost]
-        public ActionResult DeleteItem(string ItemDelete)
+        public ActionResult DeleteItem(int ItemDelete)
         {
             using (var db = new SqlConnection(mainconn))
             {
@@ -296,7 +297,7 @@ namespace MusicZoneSystem.Controllers
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "DELETE c FROM canvas c JOIN product p ON c.prod_id = p.prod_id WHERE p.prod_name = @canvas_Item";
+                    cmd.CommandText = "DELETE FROM canvas WHERE canvas_id = @canvas_Item";
                     cmd.Parameters.AddWithValue("@canvas_Item", ItemDelete);
 
                     try
@@ -326,7 +327,75 @@ namespace MusicZoneSystem.Controllers
                 }
             }
         }
+        [HttpPost]
+        public ActionResult EditItem(int ItemEdit_ID, int ItemEdit_Qty, string ItemEdit_Unit, decimal ItemEdit_Total)
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "UPDATE canvas SET canvas_quantity = @c_qty, canvas_unit = @c_unit, canvas_total = @c_total WHERE canvas_id = @id;";
+                    cmd.Parameters.AddWithValue("@c_qty", ItemEdit_Qty);
+                    cmd.Parameters.AddWithValue("@c_unit", ItemEdit_Unit);
+                    cmd.Parameters.AddWithValue("@c_total", ItemEdit_Total);
+                    cmd.Parameters.AddWithValue("@id", ItemEdit_ID);
 
+                    // Execute the UPDATE statement.
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        // Redirect to the "Requisition" action
+                        return RedirectToAction("Requisition");
+                    }
+                    else
+                    {
+                        // Item not found or no changes were made
+                        return View("Error");
+                    }
+                }
+            }
+        }
+
+        public ActionResult EditItemView(int ItemEdit_ID)
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd1 = db.CreateCommand())
+                {
+                    cmd1.CommandType = CommandType.Text;
+                    cmd1.CommandText = "SELECT * FROM canvas c JOIN product p ON c.prod_id = p.prod_id where canvas_id = @canId";
+                    cmd1.Parameters.AddWithValue("@canId", ItemEdit_ID);
+
+                    SqlDataReader reader = cmd1.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+
+                        EditItemViewModel item = new EditItemViewModel
+                        {
+                            CanvasID = Convert.ToInt32(reader["canvas_id"]),
+                            CanvasItem = reader["prod_name"].ToString(),
+                            CanvasDesc = reader["prod_desc"].ToString(),
+                            CanvasQuantity = Convert.ToInt32(reader["canvas_quantity"]),
+                            CanvasUnit = reader["canvas_unit"].ToString(),
+                            CanvasPrice = Convert.ToDecimal(reader["prod_price"]),
+                            CanvasTotal = Convert.ToDecimal(reader["canvas_total"]),
+                        };
+
+                        return View(item);
+                    }
+                    else
+                    {
+                        return View("Index");
+                    }
+                }
+            }
+        }
         public ActionResult Profile()
         {
             return View();
