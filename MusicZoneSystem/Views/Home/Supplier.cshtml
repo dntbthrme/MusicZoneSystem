@@ -25,17 +25,30 @@
             <p class="text-uppercase">Geltan's Music Zone</p>
             <h3 class="title-style">Suppliers</h3>
         </div>
+
+        <!-- Search for suppliers -->
+        <div class="search-container">
+            <form @*action="@Url.Action("SearchSupplier", "Home")"*@ method="post">
+                <div class="search-wrapper">
+                    <input type="text" placeholder="Search supplier.." name="search" class="search-box" id="searchBox">
+                    <button type="submit" class="btn btn-style-3"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+        <!-- Search for suppliers -->
+
+        <!-- Loop for suppliers -->
         <div class="row justify-content-center">
             @model List<supplierDetails>
 
             <div class="row">
                 @foreach (var supplier in Model)
                 {
-                    <div class="col-lg-4 col-md-6">
-                        <div class="coursecard-single">
+                    <div class="col-lg-4 col-md-6" style="margin-bottom: 20px;">
+                        <div class="supplier-card-single">
                             <div class="content-main-top">
                                 <ul class="list-unstyled d-flex align-items-center justify-content-between">
-                                    <li><i class="fas fa-shopping-cart"></i>&nbsp; Supplier ID: &nbsp; @supplier.sup_id </li>
+                                    <li><i class="fas fa-truck"></i>&nbsp; Supplier ID: &nbsp; @supplier.sup_id </li>
                                 </ul>
                                 <h4><a>@supplier.sup_company</a></h4>
                                 <p>Contact person:&emsp;@supplier.sup_fname &nbsp;@supplier.sup_mi . &nbsp; @supplier.sup_lname </p>
@@ -52,8 +65,21 @@
                     </div>
                 }
             </div>
-
         </div>
+        <!-- Loop for suppliers -->
     </div>
 </div>
 <!-- Content block -->
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    //$(document).ready(function () {
+    //    // Trigger form submission on search box change
+    //    $('#searchBox').on('input', function () {
+    //        // Submit the form
+    //        $('form').submit();
+    //    });
+    //});
+</script>
+

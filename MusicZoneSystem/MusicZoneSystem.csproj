@@ -148,7 +148,6 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\model.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -182,6 +181,9 @@
     <Content Include="Views\Default\Index.cshtml" />
     <Content Include="Views\Home\SupplierDetails.cshtml" />
     <Content Include="Views\Home\EditItemView.cshtml" />
+    <Content Include="Views\Home\RequisitionForm.cshtml" />
+    <Content Include="Views\Home\CreateNewRequisition.cshtml" />
+    <Content Include="Views\Home\RequisitionDetails.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

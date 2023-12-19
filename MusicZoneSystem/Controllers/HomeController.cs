@@ -20,7 +20,7 @@ namespace MusicZoneSystem.Controllers
             return View();
         }
 
-        public ActionResult Requisition()
+        public ActionResult CreateNewRequisition()
         {
             try
             {
@@ -98,6 +98,44 @@ namespace MusicZoneSystem.Controllers
             }
         }
 
+        public ActionResult Requisition()
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT * FROM [dbo].[requisition] where rf_status != 'Cancelled'";
+                    SqlDataAdapter sda = new SqlDataAdapter(cmd);
+                    DataSet ds = new DataSet();
+                    sda.Fill(ds);
+
+                    List<requisitionDetails> lemp = new List<requisitionDetails>();
+
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        requisitionDetails supplier = new requisitionDetails
+                        {
+                            // Populate properties based on your database columns
+                            rf_id = Convert.ToInt32(dr["rf_id"]),
+                            rf_date_requested = dr["rf_date_requested"].ToString(),
+                            rf_code = dr["rf_code"].ToString(),
+                            rf_status = dr["rf_status"].ToString(),
+                            rf_estimated_cost = Convert.ToDecimal(dr["rf_estimated_cost"]),
+                        };
+
+                        lemp.Add(supplier);
+                    }
+
+                    db.Close();
+
+                    // Pass the list to the view
+                    return View(lemp);
+                }
+            }
+        }
+
         private void InsertCanvasRecord(SqlConnection connection, SqlTransaction transaction, int quantity, decimal total, int selectedProduct, string unit)
         {
             using (var command = connection.CreateCommand())
@@ -136,7 +174,7 @@ namespace MusicZoneSystem.Controllers
                     {
                         InsertCanvasRecord(connection, transaction, quantity, totalValue, product, unit);
                         transaction.Commit();
-                        return RedirectToAction("Requisition");
+                        return RedirectToAction("CreateNewRequisition");
                     }
                     catch (Exception ex)
                     {
@@ -308,8 +346,8 @@ namespace MusicZoneSystem.Controllers
                         // Check if any rows were affected to determine if the deletion was successful.
                         if (rowsAffected > 0)
                         {
-                            // Redirect to the "Requisition" action
-                            return RedirectToAction("Requisition");
+                            // Redirect to the "CreateNewRequisition" action
+                            return RedirectToAction("CreateNewRequisition");
                         }
                         else
                         {
@@ -347,8 +385,8 @@ namespace MusicZoneSystem.Controllers
 
                     if (rowsAffected > 0)
                     {
-                        // Redirect to the "Requisition" action
-                        return RedirectToAction("Requisition");
+                        // Redirect to the "CreateNewRequisition" action
+                        return RedirectToAction("CreateNewRequisition");
                     }
                     else
                     {
@@ -396,6 +434,326 @@ namespace MusicZoneSystem.Controllers
                 }
             }
         }
+        private void InsertRequisitionItem(SqlConnection db, int canvas)
+        {
+            // Retrieve last inserted ID
+            using (var cmd = db.CreateCommand())
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT TOP 1 rf_id FROM requisition ORDER BY rf_id DESC";
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int rfForm = Convert.ToInt32(reader["rf_id"]);
+                        TempData["LatestInsert"] = rfForm;
+
+                        // Close the SqlDataReader before executing the inner command
+                        reader.Close();
+
+                        // Insert into [dbo].[requisition_item]
+                        using (var insertCmd = db.CreateCommand())
+                        {
+                            insertCmd.CommandType = CommandType.Text;
+                            insertCmd.CommandText = "INSERT INTO [dbo].[requisition_item] (ri_status, canvas_id, rf_id) " +
+                                                    "VALUES ('Pending', @id, @rf)";
+                            insertCmd.Parameters.AddWithValue("@id", canvas);
+                            insertCmd.Parameters.AddWithValue("@rf", rfForm);
+
+                            int rowsAffected = insertCmd.ExecuteNonQuery();
+
+                            if (rowsAffected > 0)
+                            {
+                                Console.WriteLine("Requisition item inserted successfully.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("No rows affected. Requisition item not inserted.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No data retrieved from the requisition table.");
+                    }
+                }
+            }
+        }
+        public ActionResult SubmitDataRF(decimal EstimateTotal)
+        {
+            try
+            {
+                using (var db = new SqlConnection(mainconn))
+                {
+                    db.Open();
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandType = CommandType.Text;
+                        cmd.CommandText = "INSERT INTO [dbo].[requisition] (rf_date_requested, rf_status, rf_estimated_cost, user_id, dep_id) " +
+                            "VALUES (GETDATE(), 'Pending', @estimate, @user, 1)";
+                        cmd.Parameters.AddWithValue("@estimate", EstimateTotal);
+                        cmd.Parameters.AddWithValue("@user", 1);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            // Retrieve canvas IDs
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = "SELECT canvas_id FROM canvas WHERE canvas_status = 0";
+
+                            List<int> canvasIds = new List<int>();
+
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    int id = Convert.ToInt32(reader["canvas_id"]);
+                                    canvasIds.Add(id);
+                                }
+                            }
+
+                            // Iterate over canvasIds and call InsertRequisitionItem
+                            foreach (int id in canvasIds)
+                            {
+                                InsertRequisitionItem(db, id);
+                            }
+
+                            // Update canvas status
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = "UPDATE canvas SET canvas_status = 1 WHERE canvas_status = 0";
+                            cmd.ExecuteNonQuery();
+
+                            return RedirectToAction("RequisitionForm");
+                        }
+                        else
+                        {
+                            // No row were inserted
+                            return View("Error", "No row were inserted");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it appropriately
+                return View("Error", ex.Message);
+            }
+        }
+
+        public ActionResult RequisitionForm()
+        {
+            int rfId = Convert.ToInt32(TempData["LatestInsert"]);
+            List<ViewRequisitionForm> view = new List<ViewRequisitionForm>();
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT rf.rf_id, rf.rf_status, rf.rf_code, rf.rf_date_requested, ri.ri_code, s.sup_id, s.sup_company, p.prod_name, " +
+                        "p.prod_desc, c.canvas_quantity, c.canvas_unit, p.prod_price, c.canvas_total, rf.rf_estimated_cost " +
+                        "FROM supplier s " +
+                        "JOIN product p ON s.sup_id = p.sup_id " +
+                        "JOIN canvas c ON p.prod_id = c.prod_id " +
+                        "JOIN requisition_item ri ON ri.canvas_id = c.canvas_id " +
+                        "JOIN requisition rf ON rf.rf_id = ri.rf_id " +
+                        "WHERE rf.rf_id = @id";
+
+                    cmd.Parameters.AddWithValue("@id", rfId);
+
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ViewRequisitionForm list = new ViewRequisitionForm
+                            {
+                                RF_ID = Convert.ToInt32(reader["rf_id"]),
+                                RF_Status = reader["rf_status"].ToString(),
+                                RF_Code = reader["rf_code"].ToString(),
+                                RF_Daterequested = reader["rf_date_requested"].ToString(),
+                                RF_Itemcode = reader["ri_code"].ToString(),
+                                RF_SupplierID = Convert.ToInt32(reader["sup_id"]),
+                                RF_Suppliercompany = reader["sup_company"].ToString(),
+                                RF_Item = reader["prod_name"].ToString(),
+                                RF_Description = reader["prod_desc"].ToString(),
+                                RF_Quantity = Convert.ToInt32(reader["canvas_quantity"]),
+                                RF_Unit = reader["canvas_unit"].ToString(),
+                                RF_Price = Convert.ToDecimal(reader["prod_price"]),
+                                RF_Total = Convert.ToDecimal(reader["canvas_total"]),
+                                RF_Estimatecost = Convert.ToDecimal(reader["rf_estimated_cost"]),
+                            };
+
+                            view.Add(list);
+                        }
+                    }
+
+                }
+            }
+            return View(view);
+        }
+        public ActionResult RequisitionDetails(int request_ID)
+        {
+            List<ViewRequisitionForm> details = new List<ViewRequisitionForm>();
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT rf.rf_id, rf.rf_status, rf.rf_code, rf.rf_date_requested, ri.ri_code, s.sup_id, s.sup_company, p.prod_name, " +
+                        "p.prod_desc, c.canvas_quantity, c.canvas_unit, p.prod_price, c.canvas_total, rf.rf_estimated_cost " +
+                        "FROM supplier s " +
+                        "JOIN product p ON s.sup_id = p.sup_id " +
+                        "JOIN canvas c ON p.prod_id = c.prod_id " +
+                        "JOIN requisition_item ri ON ri.canvas_id = c.canvas_id " +
+                        "JOIN requisition rf ON rf.rf_id = ri.rf_id " +
+                        "WHERE rf.rf_id = @id and rf_status != 'Cancelled'";
+
+                    cmd.Parameters.AddWithValue("@id", request_ID);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ViewRequisitionForm list = new ViewRequisitionForm
+                            {
+                                RF_ID = Convert.ToInt32(reader["rf_id"]),
+                                RF_Status = reader["rf_status"].ToString(),
+                                RF_Code = reader["rf_code"].ToString(),
+                                RF_Daterequested = reader["rf_date_requested"].ToString(),
+                                RF_Itemcode = reader["ri_code"].ToString(),
+                                RF_SupplierID = Convert.ToInt32(reader["sup_id"]),
+                                RF_Suppliercompany = reader["sup_company"].ToString(),
+                                RF_Item = reader["prod_name"].ToString(),
+                                RF_Description = reader["prod_desc"].ToString(),
+                                RF_Quantity = Convert.ToInt32(reader["canvas_quantity"]),
+                                RF_Unit = reader["canvas_unit"].ToString(),
+                                RF_Price = Convert.ToDecimal(reader["prod_price"]),
+                                RF_Total = Convert.ToDecimal(reader["canvas_total"]),
+                                RF_Estimatecost = Convert.ToDecimal(reader["rf_estimated_cost"]),
+                            };
+
+                            details.Add(list);
+                        }
+                    }
+
+                }
+            }
+            return View(details);
+        }
+
+        public ActionResult CancelRequisition(int Cancel)
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "UPDATE requisition set rf_status = 'Cancelled' where rf_id = @id";
+                    cmd.Parameters.AddWithValue("@id", Cancel);
+
+                    // Execute the UPDATE statement.
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        // Redirect to the "Requisition" action
+                        return RedirectToAction("Requisition");
+                    }
+                    else
+                    {
+                        // Item not found or no changes were made
+                        return View("Error");
+                    }
+                }
+            }
+        }
+        [HttpPost]
+        public ActionResult SearchSupplier(string search)
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT * FROM [dbo].[supplier] WHERE sup_company LIKE '%' + @key + '%'";
+                    cmd.Parameters.AddWithValue("@key", search);
+                    SqlDataAdapter sda = new SqlDataAdapter(cmd);
+                    DataSet ds = new DataSet();
+                    sda.Fill(ds);
+
+                    List<supplierDetails> lemp = new List<supplierDetails>();
+
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        supplierDetails supplier = new supplierDetails
+                        {
+                            // Populate properties based on your database columns
+                            sup_id = Convert.ToInt32(dr["sup_id"]),
+                            sup_company = dr["sup_company"].ToString(),
+                            sup_address = dr["sup_address"].ToString(),
+                            sup_lname = dr["sup_lname"].ToString(),
+                            sup_fname = dr["sup_fname"].ToString(),
+                            sup_mi = dr["sup_mi"].ToString(),
+                            sup_email = dr["sup_email"].ToString(),
+                            sup_phone = dr["sup_phone"].ToString(),
+                        };
+
+                        lemp.Add(supplier);
+                    }
+
+                    db.Close();
+
+                    // Pass the list to the view
+                    return View("Supplier", lemp);
+                }
+            }
+        }
+
+        public ActionResult SearchRequisition(string search)
+        {
+            using (var db = new SqlConnection(mainconn))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT * FROM [dbo].[requisition] where rf_status != 'Cancelled' and rf_date_requested LIKE '%' + @key + '%'";
+                    cmd.Parameters.AddWithValue("@key", search);
+                    SqlDataAdapter sda = new SqlDataAdapter(cmd);
+                    DataSet ds = new DataSet();
+                    sda.Fill(ds);
+
+                    List<requisitionDetails> lemp = new List<requisitionDetails>();
+
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        requisitionDetails supplier = new requisitionDetails
+                        {
+                            // Populate properties based on your database columns
+                            rf_id = Convert.ToInt32(dr["rf_id"]),
+                            rf_date_requested = dr["rf_date_requested"].ToString(),
+                            rf_code = dr["rf_code"].ToString(),
+                            rf_status = dr["rf_status"].ToString(),
+                            rf_estimated_cost = Convert.ToDecimal(dr["rf_estimated_cost"]),
+                        };
+
+                        lemp.Add(supplier);
+                    }
+
+                    db.Close();
+
+                    // Pass the list to the view
+                    return View(lemp);
+                }
+            }
+        }
+
         public ActionResult Profile()
         {
             return View();
