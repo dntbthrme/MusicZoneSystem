@@ -36,7 +36,6 @@
             </form>
         </div>
         <!-- Search for suppliers -->
-
         <!-- Loop for suppliers -->
         <div class="row justify-content-center">
             @model List<supplierDetails>
@@ -67,6 +66,31 @@
             </div>
         </div>
         <!-- Loop for suppliers -->
+
+        <!-- //Pagination -->
+        <div class="pagination-style text-center mt-5">
+            <ul>
+                <li>
+                    <a href="@Url.Action("Supplier", new { page = 1, pageSize = ViewBag.PageSize })" class="@(ViewBag.PageNumber == 1 ? "not-allowed disabled" : "")">
+                        <span class="fa fa-angle-double-left" aria-hidden="true"></span>
+                    </a>
+                </li>
+
+                @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalItems / ViewBag.PageSize); i++)
+                {
+                    <li class="@(i == ViewBag.PageNumber ? "active" : "")">
+                        <a href="@Url.Action("Supplier", new { page = i, pageSize = ViewBag.PageSize })">@i</a>
+                    </li>
+                }
+
+                <li>
+                    <a href="@Url.Action("Supplier", new { page = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })" class="@(ViewBag.PageNumber >= Math.Ceiling((double)ViewBag.TotalItems / ViewBag.PageSize) ? "not-allowed disabled" : "")">
+                        <span class="fa fa-angle-double-right" aria-hidden="true"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- //Pagination -->
     </div>
 </div>
 <!-- Content block -->

@@ -98,7 +98,7 @@ namespace MusicZoneSystem.Controllers
             }
         }
 
-        public ActionResult Requisition()
+        public ActionResult Requisition(int page = 1, int pageSize = 6)
         {
             using (var db = new SqlConnection(mainconn))
             {
@@ -130,11 +130,19 @@ namespace MusicZoneSystem.Controllers
 
                     db.Close();
 
-                    // Pass the list to the view
-                    return View(lemp);
+                    // Perform pagination logic
+                    var paginatedModel = lemp.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                    ViewBag.PageNumber = page;
+                    ViewBag.PageSize = pageSize;
+                    ViewBag.TotalItems = lemp.Count;
+
+                    // Pass the paginated list to the view
+                    return View(paginatedModel);
                 }
             }
         }
+
 
         private void InsertCanvasRecord(SqlConnection connection, SqlTransaction transaction, int quantity, decimal total, int selectedProduct, string unit)
         {
@@ -185,7 +193,7 @@ namespace MusicZoneSystem.Controllers
                 }
             }
         }
-        public ActionResult Supplier()
+        public ActionResult Supplier(int page = 1, int pageSize = 6)
         {
             using (var db = new SqlConnection(mainconn))
             {
@@ -198,7 +206,7 @@ namespace MusicZoneSystem.Controllers
                     DataSet ds = new DataSet();
                     sda.Fill(ds);
 
-                    List<supplierDetails> lemp = new List<supplierDetails>();
+                    List<supplierDetails> suppliers = new List<supplierDetails>();
 
                     foreach (DataRow dr in ds.Tables[0].Rows)
                     {
@@ -215,16 +223,24 @@ namespace MusicZoneSystem.Controllers
                             sup_phone = dr["sup_phone"].ToString(),
                         };
 
-                        lemp.Add(supplier);
+                        suppliers.Add(supplier);
                     }
 
                     db.Close();
 
-                    // Pass the list to the view
-                    return View(lemp);
+                    // Perform pagination logic
+                    var paginatedSuppliers = suppliers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                    ViewBag.PageNumber = page;
+                    ViewBag.PageSize = pageSize;
+                    ViewBag.TotalItems = suppliers.Count;
+
+                    // Pass the paginated list to the view
+                    return View(paginatedSuppliers);
                 }
             }
         }
+
         public ActionResult SupplierDetails(int supId)
         {
             using (var db = new SqlConnection(mainconn))

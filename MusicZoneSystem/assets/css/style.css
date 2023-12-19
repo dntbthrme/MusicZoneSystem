@@ -19855,3 +19855,54 @@ h4.inner-text-title {
     border-color: transparent;
 }
 /* //search section */
+
+/* pagination blog page */
+.pagination-style {
+    display: block;
+}
+
+    .pagination-style ul li {
+        display: inline-block;
+    }
+
+        .pagination-style ul li span.fa {
+            color: var(--heading-color);
+        }
+
+        .pagination-style ul li a:hover span.fa {
+            color: #fff;
+        }
+
+    .pagination-style a {
+        display: inline-block;
+        color: var(--heading-color);
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        line-height: 40px;
+        border-radius: 50%;
+        font-weight: 600;
+    }
+
+        .pagination-style a span {
+            margin: 0;
+        }
+
+        .pagination-style a.active,
+        .pagination-style a:hover {
+            background-color: var(--secondary-color);
+            color: #fff;
+        }
+
+    .pagination-style ul li a.not-allowed span.fa {
+        cursor: not-allowed;
+        color: #c3c2c2;
+    }
+
+    .pagination-style .not-allowed:hover {
+        opacity: 1;
+        background: transparent;
+        color: #c3c2c2;
+    }
+
+/* //pagination blog page */
